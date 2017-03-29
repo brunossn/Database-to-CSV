@@ -1,9 +1,10 @@
-﻿using System;
+﻿using FirebirdSql.Data.FirebirdClient;
+using System;
+using System.Data.Common;
 using System.Data.SqlClient;
+using System.Data.SQLite;
 using System.IO;
 using System.Text;
-using System.Data.SQLite;
-using System.Data.Common;
 
 namespace GeraCSV
 {
@@ -12,7 +13,8 @@ namespace GeraCSV
         private enum eTipoBanco
         {
             SQLServer = 1,
-            Sqlite = 2
+            Sqlite = 2,
+            Firebird = 3
         }
 
         static void Main(string[] args)
@@ -37,15 +39,22 @@ namespace GeraCSV
                     // Conecta ao SQL
                     DbConnection conexao;
                     DbCommand comando;
-                    if (tipoBanco == eTipoBanco.SQLServer)
+                    switch(tipoBanco)
                     {
-                        conexao = new SqlConnection(stringConexao);
-                        comando = new SqlCommand();
-                    }
-                    else
-                    {
-                        conexao = new SQLiteConnection(stringConexao);
-                        comando = new SQLiteCommand();
+                        case eTipoBanco.SQLServer:
+                            conexao = new SqlConnection(stringConexao);
+                            comando = new SqlCommand();
+                            break;
+                        case eTipoBanco.Sqlite:
+                            conexao = new SQLiteConnection(stringConexao);
+                            comando = new SQLiteCommand();
+                            break;
+                        case eTipoBanco.Firebird:
+                            conexao = new FbConnection(stringConexao);
+                            comando = new FbCommand();
+                            break;
+                        default:
+                            throw new Exception("Tipo de banco de dados não especificado.");
                     }
                     
                     conexao.Open();
@@ -96,8 +105,8 @@ namespace GeraCSV
             if(args.Length != 4)
             {
                 retorno = "Execute o sistema passando quatro parâmetros:\n[1] - Arquivo TXT contendo a query\n" +
-                    "[2] - Caminho do arquivo CSV que será gerado;\n[3] - String de conexão com o banco de dados\n" +
-                    "[4] - Tipo do banco de dados (1 - SQL Server / 2 - SQLite)";
+                    "[2] - Caminho do arquivo CSV que será gerado\n[3] - String de conexão com o banco de dados\n" +
+                    "[4] - Tipo do banco de dados (1 - SQL Server / 2 - SQLite / 3 - Firebird)";
             }
             else
             {
