@@ -1,4 +1,5 @@
 ﻿using FirebirdSql.Data.FirebirdClient;
+using Oracle.ManagedDataAccess.Client;
 using System;
 using System.Data.Common;
 using System.Data.SqlClient;
@@ -14,7 +15,8 @@ namespace GeraCSV
         {
             SQLServer = 1,
             Sqlite = 2,
-            Firebird = 3
+            Firebird = 3,
+            Oracle = 4
         }
 
         static void Main(string[] args)
@@ -52,6 +54,10 @@ namespace GeraCSV
                         case eTipoBanco.Firebird:
                             conexao = new FbConnection(stringConexao);
                             comando = new FbCommand();
+                            break;
+                        case eTipoBanco.Oracle:
+                            conexao = new OracleConnection(stringConexao);
+                            comando = new OracleCommand();
                             break;
                         default:
                             throw new Exception("Tipo de banco de dados não especificado.");
@@ -106,7 +112,7 @@ namespace GeraCSV
             {
                 retorno = "Execute o sistema passando quatro parâmetros:\n[1] - Arquivo TXT contendo a query\n" +
                     "[2] - Caminho do arquivo CSV que será gerado\n[3] - String de conexão com o banco de dados\n" +
-                    "[4] - Tipo do banco de dados (1 - SQL Server / 2 - SQLite / 3 - Firebird)";
+                    "[4] - Tipo do banco de dados (1 - SQL Server / 2 - SQLite / 3 - Firebird / 4 - Oracle)";
             }
             else
             {
