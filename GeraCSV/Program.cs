@@ -112,25 +112,19 @@ namespace GeraCSV
 
         public static string valida(string[] args)
         {
-            string retorno = "";
-
             if(args.Length != 4)
-            {
-                retorno = "Execute o sistema passando quatro parâmetros:\n[1] - Arquivo TXT contendo a query\n" +
+                return "Execute o sistema passando quatro parâmetros:\n[1] - Arquivo TXT contendo a query\n" +
                     "[2] - Caminho do arquivo CSV que será gerado\n[3] - String de conexão com o banco de dados\n" +
                     "[4] - Tipo do banco de dados (1 - SQL Server / 2 - SQLite / 3 - Firebird / 4 - Oracle / 5 - MySql)";
-            }
             else
             {
                 string caminho = args[0];
 
                 if(!File.Exists(caminho))
-                {
-                    retorno = string.Format("Arquivo {0} não localizado!", caminho);
-                }
+                    return string.Format("Arquivo {0} não localizado!", caminho);
             }
 
-            return retorno;
+            return "";
         }
     }
 }
