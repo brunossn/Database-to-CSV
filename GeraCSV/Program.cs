@@ -3,6 +3,7 @@ using MySql.Data.MySqlClient;
 using Oracle.ManagedDataAccess.Client;
 using System;
 using System.Data.Common;
+using System.Data.OleDb;
 using System.Data.SqlClient;
 using System.Data.SQLite;
 using System.IO;
@@ -18,11 +19,15 @@ namespace GeraCSV
             Sqlite = 2,
             Firebird = 3,
             Oracle = 4,
-            MySql = 5
+            MySql = 5,
+            Access = 6
         }
 
         static void Main(string[] args)
         {
+            int linhaAtual = 0;
+            int colunaAtual = 0;
+
             try
             {
                 string mensagemValida = valida(args);
@@ -37,63 +42,34 @@ namespace GeraCSV
                     var query = File.ReadAllText(arquivoQuery);
                     var saida = new StringBuilder();
 
-                    // Conecta ao SQL
-                    DbConnection conexao;
-                    DbCommand comando;
-                    switch(tipoBanco)
+                    using (var conexao = GetConnection(tipoBanco, stringConexao))
                     {
-                        case eTipoBanco.SQLServer:
-                            conexao = new SqlConnection(stringConexao);
-                            comando = new SqlCommand();
-                            break;
-                        case eTipoBanco.Sqlite:
-                            conexao = new SQLiteConnection(stringConexao);
-                            comando = new SQLiteCommand();
-                            break;
-                        case eTipoBanco.Firebird:
-                            conexao = new FbConnection(stringConexao);
-                            comando = new FbCommand();
-                            break;
-                        case eTipoBanco.Oracle:
-                            conexao = new OracleConnection(stringConexao);
-                            comando = new OracleCommand();
-                            break;
-                        case eTipoBanco.MySql:
-                            conexao = new MySqlConnection(stringConexao);
-                            comando = new MySqlCommand();
-                            break;
-                        default:
-                            throw new Exception("Tipo de banco de dados não especificado.");
-                    }
-                    
-                    conexao.Open();
-                    comando.CommandText = query;
-                    comando.Connection = conexao;
-                    comando.CommandTimeout = 90000;
-
-                    using (var dr = comando.ExecuteReader())
-                    {
-                        int linhaAtual = 0;
-                        int colunaAtual = 0;
-
-                        while (dr.Read())
+                        using (var comando = conexao.CreateCommand())
                         {
-                            linhaAtual++;
+                            conexao.Open();
+                            comando.CommandText = query;
+                            comando.Connection = conexao;
+                            comando.CommandTimeout = 90000;
 
-                            for (colunaAtual = 0; colunaAtual < dr.FieldCount; colunaAtual++)
+                            using (var dr = comando.ExecuteReader())
                             {
-                                if (colunaAtual != 0) saida.Append(";");
-                                saida.Append(dr[colunaAtual].ToString().Trim());
-                            }
+                                while (dr.Read())
+                                {
+                                    linhaAtual++;
 
-                            saida.Append("\n");
+                                    for (colunaAtual = 0; colunaAtual < dr.FieldCount; colunaAtual++)
+                                    {
+                                        if (colunaAtual != 0) saida.Append(";");
+                                        saida.Append(dr[colunaAtual].ToString().Trim());
+                                    }
+
+                                    saida.Append("\n");
+                                }
+                            }
+                            
+                            File.WriteAllText(saidaCSV, saida.ToString().Trim(), Encoding.UTF8); // Saída
                         }
                     }
-                    
-                    // Saída
-                    File.WriteAllText(saidaCSV, saida.ToString().Trim(), Encoding.UTF8);
-
-                    conexao.Close();
                 }
                 else
                 {
@@ -107,6 +83,27 @@ namespace GeraCSV
                 Console.WriteLine("\n\nDescrição: " + ex.Message);
                 Console.WriteLine("\n\nGeral: " + ex.ToString());
                 Console.Read();
+            }
+        }
+
+        private static DbConnection GetConnection(eTipoBanco tipoBanco, string stringConexao)
+        {
+            switch (tipoBanco)
+            {
+                case eTipoBanco.SQLServer:
+                    return new SqlConnection(stringConexao);
+                case eTipoBanco.Sqlite:
+                    return new SQLiteConnection(stringConexao);
+                case eTipoBanco.Firebird:
+                    return new FbConnection(stringConexao);
+                case eTipoBanco.Oracle:
+                    return new OracleConnection(stringConexao);
+                case eTipoBanco.MySql:
+                    return new MySqlConnection(stringConexao);
+                case eTipoBanco.Access:
+                    return new OleDbConnection(stringConexao);
+                default:
+                    throw new Exception("Tipo de banco de dados não especificado.");
             }
         }
 
