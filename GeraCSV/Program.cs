@@ -23,9 +23,6 @@ namespace GeraCSV
 
         static void Main(string[] args)
         {
-            int linhaAtual = 0;
-            int colunaAtual = 0;
-
             try
             {
                 string mensagemValida = valida(args);
@@ -74,8 +71,11 @@ namespace GeraCSV
                     comando.Connection = conexao;
                     comando.CommandTimeout = 90000;
 
-                    using (DbDataReader dr = comando.ExecuteReader())
+                    using (var dr = comando.ExecuteReader())
                     {
+                        int linhaAtual = 0;
+                        int colunaAtual = 0;
+
                         while (dr.Read())
                         {
                             linhaAtual++;
