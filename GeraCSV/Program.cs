@@ -38,16 +38,16 @@ namespace GeraCSV
                     string saidaCSV = args[1];
                     string stringConexao = args[2];
                     eTipoBanco tipoBanco = (eTipoBanco)Convert.ToInt32(args[3]);
-                    
-                    var query = File.ReadAllText(arquivoQuery);
+                   
                     var saida = new StringBuilder();
 
                     using (var conexao = GetConnection(tipoBanco, stringConexao))
                     {
+                        conexao.Open();
+
                         using (var comando = conexao.CreateCommand())
                         {
-                            conexao.Open();
-                            comando.CommandText = query;
+                            comando.CommandText = File.ReadAllText(arquivoQuery, Encoding.GetEncoding("ISO-8859-1"));
                             comando.Connection = conexao;
                             comando.CommandTimeout = 90000;
 
@@ -66,7 +66,7 @@ namespace GeraCSV
                                     saida.Append("\n");
                                 }
                             }
-                            
+
                             File.WriteAllText(saidaCSV, saida.ToString().Trim(), Encoding.UTF8); // Saída
                         }
                     }
@@ -112,7 +112,7 @@ namespace GeraCSV
             if(args.Length != 4)
                 return "Execute o sistema passando quatro parâmetros:\n[1] - Arquivo TXT contendo a query\n" +
                     "[2] - Caminho do arquivo CSV que será gerado\n[3] - String de conexão com o banco de dados\n" +
-                    "[4] - Tipo do banco de dados (1 - SQL Server / 2 - SQLite / 3 - Firebird / 4 - Oracle / 5 - MySql)";
+                    "[4] - Tipo do banco de dados (1 - SQL Server / 2 - SQLite / 3 - Firebird / 4 - Oracle / 5 - MySql / 6 - Access)";
             else
             {
                 string caminho = args[0];
