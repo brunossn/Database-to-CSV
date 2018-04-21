@@ -60,7 +60,7 @@ namespace GeraCSV
                                     for (colunaAtual = 0; colunaAtual < dr.FieldCount; colunaAtual++)
                                     {
                                         if (colunaAtual != 0) saida.Append(";");
-                                        saida.Append(dr[colunaAtual].ToString().Trim());
+                                        saida.Append(dr[colunaAtual].ToString().Replace("\n", " ").Replace("\r", " ").Trim());
                                     }
 
                                     saida.Append("\n");
