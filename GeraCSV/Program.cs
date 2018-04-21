@@ -8,6 +8,7 @@ using System.Data.SqlClient;
 using System.Data.SQLite;
 using System.IO;
 using System.Text;
+using IBM.Data.DB2;
 
 namespace GeraCSV
 {
@@ -20,7 +21,8 @@ namespace GeraCSV
             Firebird = 3,
             Oracle = 4,
             MySql = 5,
-            Access = 6
+            Access = 6,
+            DB2 = 7
         }
 
         static void Main(string[] args)
@@ -102,6 +104,8 @@ namespace GeraCSV
                     return new MySqlConnection(stringConexao);
                 case eTipoBanco.Access:
                     return new OleDbConnection(stringConexao);
+                case eTipoBanco.DB2:
+                    return new DB2Connection(stringConexao);
                 default:
                     throw new Exception("Tipo de banco de dados não especificado.");
             }
@@ -112,7 +116,7 @@ namespace GeraCSV
             if(args.Length != 4)
                 return "Execute o sistema passando quatro parâmetros:\n[1] - Arquivo TXT contendo a query\n" +
                     "[2] - Caminho do arquivo CSV que será gerado\n[3] - String de conexão com o banco de dados\n" +
-                    "[4] - Tipo do banco de dados (1 - SQL Server / 2 - SQLite / 3 - Firebird / 4 - Oracle / 5 - MySql / 6 - Access)";
+                    "[4] - Tipo do banco de dados (1 - SQL Server / 2 - SQLite / 3 - Firebird / 4 - Oracle / 5 - MySql / 6 - Access / 7 - IBM DB2)";
             else
             {
                 string caminho = args[0];
