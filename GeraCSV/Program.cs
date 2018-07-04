@@ -8,7 +8,8 @@ using System.Data.SqlClient;
 using System.Data.SQLite;
 using System.IO;
 using System.Text;
-using IBM.Data.DB2;
+using Npgsql;
+//using IBM.Data.DB2;
 
 namespace GeraCSV
 {
@@ -22,7 +23,8 @@ namespace GeraCSV
             Oracle = 4,
             MySql = 5,
             Access = 6,
-            DB2 = 7
+            DB2 = 7,
+            PostgreSql = 8
         }
 
         static void Main(string[] args)
@@ -41,8 +43,6 @@ namespace GeraCSV
                     string stringConexao = args[2];
                     eTipoBanco tipoBanco = (eTipoBanco)Convert.ToInt32(args[3]);
                    
-                    var saida = new StringBuilder();
-
                     using (var conexao = GetConnection(tipoBanco, stringConexao))
                     {
                         conexao.Open();
@@ -55,21 +55,22 @@ namespace GeraCSV
 
                             using (var dr = comando.ExecuteReader())
                             {
-                                while (dr.Read())
+                                using (var sw = new StreamWriter(saidaCSV, false, Encoding.UTF8))
                                 {
-                                    linhaAtual++;
-
-                                    for (colunaAtual = 0; colunaAtual < dr.FieldCount; colunaAtual++)
+                                    while (dr.Read())
                                     {
-                                        if (colunaAtual != 0) saida.Append(";");
-                                        saida.Append(dr[colunaAtual].ToString().Replace("\n", " ").Replace("\r", " ").Trim());
-                                    }
+                                        linhaAtual++;
 
-                                    saida.Append("\n");
+                                        for (colunaAtual = 0; colunaAtual < dr.FieldCount; colunaAtual++)
+                                        {
+                                            if (colunaAtual != 0) sw.Write(";");
+                                            sw.Write(dr[colunaAtual].ToString().Replace("\n", " ").Replace("\r", " ").Trim());
+                                        }
+
+                                        sw.Write("\n");
+                                    }
                                 }
                             }
-
-                            File.WriteAllText(saidaCSV, saida.ToString().Trim(), Encoding.UTF8); // Saída
                         }
                     }
                 }
@@ -104,8 +105,10 @@ namespace GeraCSV
                     return new MySqlConnection(stringConexao);
                 case eTipoBanco.Access:
                     return new OleDbConnection(stringConexao);
-                case eTipoBanco.DB2:
-                    return new DB2Connection(stringConexao);
+                //case eTipoBanco.DB2:
+                //    return new DB2Connection(stringConexao);
+                case eTipoBanco.PostgreSql:
+                    return new NpgsqlConnection(stringConexao);
                 default:
                     throw new Exception("Tipo de banco de dados não especificado.");
             }
@@ -116,7 +119,7 @@ namespace GeraCSV
             if(args.Length != 4)
                 return "Execute o sistema passando quatro parâmetros:\n[1] - Arquivo TXT contendo a query\n" +
                     "[2] - Caminho do arquivo CSV que será gerado\n[3] - String de conexão com o banco de dados\n" +
-                    "[4] - Tipo do banco de dados (1 - SQL Server / 2 - SQLite / 3 - Firebird / 4 - Oracle / 5 - MySql / 6 - Access / 7 - IBM DB2)";
+                    "[4] - Tipo do banco de dados (1 - SQL Server / 2 - SQLite / 3 - Firebird / 4 - Oracle / 5 - MySql / 6 - Access / 7 - IBM DB2 / 8 - PostgreSQL)";
             else
             {
                 string caminho = args[0];
