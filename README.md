@@ -1,5 +1,14 @@
 # Database-to-CSV
 
-Pequeno utilitário que dá a saída de uma consulta a banco de dados no formato CSV.
+Get results from a database and save it in a CSV file.
 
-Aceita bancos de dados SQL Server, Firebird e Sqlite.
+Written in C#, works with:
+
+- SQL Server
+- SQLite
+- Firebird
+- Oracle
+- MySql
+- Microsoft Access
+- IBM DB2
+- PostgreSql
