@@ -112,7 +112,7 @@ namespace DatabaseToCSV
                 message = "Run this tool again with four parameters:\n[1] - Full path of a .SQL file with a query\n" +
                     "[2] - Full path of the .CSV file that will be generated\n" + 
                     "[3] - Connectionstring (get support in connectionstrings.com)\n" +
-                    "[4] - Databse type (1 - SQL Server / 2 - SQLite / 3 - Firebird / 4 - Oracle / 5 - MySql / 6 - Access / 7 - IBM DB2 / 8 - PostgreSQL)";
+                    "[4] - Database type (1 - SQL Server / 2 - SQLite / 3 - Firebird / 4 - Oracle / 5 - MySql / 6 - Access / 7 - IBM DB2 / 8 - PostgreSQL)";
             else
             {
                 string file = args[0];
