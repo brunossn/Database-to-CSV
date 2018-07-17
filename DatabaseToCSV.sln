@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27428.2005
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DatabaseToCSV", "GeraCSV\DatabaseToCSV.csproj", "{8DCFFF26-30F3-44D8-BE03-F3A54EAC023D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DatabaseToCSV", "DatabaseToCSV\DatabaseToCSV.csproj", "{8DCFFF26-30F3-44D8-BE03-F3A54EAC023D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
