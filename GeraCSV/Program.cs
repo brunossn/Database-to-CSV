@@ -9,7 +9,7 @@ using System.Data.SQLite;
 using System.IO;
 using System.Text;
 using Npgsql;
-//using IBM.Data.DB2;
+using IBM.Data.DB2;
 
 namespace DatabaseToCSV
 {
@@ -105,8 +105,8 @@ namespace DatabaseToCSV
                     return new MySqlConnection(stringConexao);
                 case eDatabase.Access:
                     return new OleDbConnection(stringConexao);
-                //case eTipoBanco.DB2:
-                //    return new DB2Connection(stringConexao);
+                case eDatabase.DB2:
+                    return new DB2Connection(stringConexao);
                 case eDatabase.PostgreSql:
                     return new NpgsqlConnection(stringConexao);
                 default:
