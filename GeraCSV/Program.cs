@@ -15,6 +15,8 @@ namespace DatabaseToCSV
 {
     class Program
     {
+        private const int TIMEOUT_MILESSECONDS = 90000;
+
         private enum eDatabase
         {
             SQLServer = 1,
@@ -34,50 +36,38 @@ namespace DatabaseToCSV
 
             try
             {
-                string validationMessage = Validate(args);
+                if (!Validate(args)) return;
                 
-                if (validationMessage == "")
-                {
-                    string queryFile = args[0];
-                    string csvFile = args[1];
-                    string connectionString = args[2];
-                    eDatabase database = (eDatabase)Convert.ToInt32(args[3]);
+                string queryFile = args[0];
+                string csvFile = args[1];
+                string connectionString = args[2];
+                eDatabase database = (eDatabase)Convert.ToInt32(args[3]);
                    
-                    using (var connection = GetConnection(database, connectionString))
+                using (var connection = GetConnection(database, connectionString))
+                {
+                    connection.Open();
+
+                    using (var command = connection.CreateCommand())
                     {
-                        connection.Open();
+                        command.CommandText = File.ReadAllText(queryFile, Encoding.GetEncoding("ISO-8859-1"));
+                        command.Connection = connection;
+                        command.CommandTimeout = TIMEOUT_MILESSECONDS;
 
-                        using (var command = connection.CreateCommand())
+                        using (var dr = command.ExecuteReader())
+                        using (var sw = new StreamWriter(csvFile, false, Encoding.UTF8))
+                        while (dr.Read())
                         {
-                            command.CommandText = File.ReadAllText(queryFile, Encoding.GetEncoding("ISO-8859-1"));
-                            command.Connection = connection;
-                            command.CommandTimeout = 90000;
+                            rowNumber++;
 
-                            using (var dr = command.ExecuteReader())
+                            for (columnNumber = 0; columnNumber < dr.FieldCount; columnNumber++)
                             {
-                                using (var sw = new StreamWriter(csvFile, false, Encoding.UTF8))
-                                {
-                                    while (dr.Read())
-                                    {
-                                        rowNumber++;
-
-                                        for (columnNumber = 0; columnNumber < dr.FieldCount; columnNumber++)
-                                        {
-                                            if (columnNumber != 0) sw.Write(";");
-                                            sw.Write(dr[columnNumber].ToString().Replace("\n", " ").Replace("\r", " ").Trim());
-                                        }
-
-                                        sw.Write("\n");
-                                    }
-                                }
+                                if (columnNumber != 0) sw.Write(";");
+                                sw.Write(dr[columnNumber].ToString().Replace("\n", " ").Replace("\r", " ").Trim());
                             }
+
+                            sw.Write("\n");
                         }
                     }
-                }
-                else
-                {
-                    Console.WriteLine(validationMessage);
-                    Console.Read();
                 }
             }
             catch(Exception ex)
@@ -89,35 +79,37 @@ namespace DatabaseToCSV
             }
         }
 
-        private static DbConnection GetConnection(eDatabase tipoBanco, string stringConexao)
+        private static DbConnection GetConnection(eDatabase databaseType, string connectionString)
         {
-            switch (tipoBanco)
+            switch (databaseType)
             {
                 case eDatabase.SQLServer:
-                    return new SqlConnection(stringConexao);
+                    return new SqlConnection(connectionString);
                 case eDatabase.Sqlite:
-                    return new SQLiteConnection(stringConexao);
+                    return new SQLiteConnection(connectionString);
                 case eDatabase.Firebird:
-                    return new FbConnection(stringConexao);
+                    return new FbConnection(connectionString);
                 case eDatabase.Oracle:
-                    return new OracleConnection(stringConexao);
+                    return new OracleConnection(connectionString);
                 case eDatabase.MySql:
-                    return new MySqlConnection(stringConexao);
+                    return new MySqlConnection(connectionString);
                 case eDatabase.Access:
-                    return new OleDbConnection(stringConexao);
+                    return new OleDbConnection(connectionString);
                 case eDatabase.DB2:
-                    return new DB2Connection(stringConexao);
+                    return new DB2Connection(connectionString);
                 case eDatabase.PostgreSql:
-                    return new NpgsqlConnection(stringConexao);
+                    return new NpgsqlConnection(connectionString);
                 default:
                     throw new Exception("Unspecified database type.");
             }
         }
 
-        public static string Validate(string[] args)
+        public static bool Validate(string[] args)
         {
+            var message = "";
+
             if(args.Length != 4)
-                return "Run this tool again with four parameters:\n[1] - Full path of a .SQL file with a query\n" +
+                message = "Run this tool again with four parameters:\n[1] - Full path of a .SQL file with a query\n" +
                     "[2] - Full path of the .CSV file that will be generated\n" + 
                     "[3] - Connectionstring (get support in connectionstrings.com)\n" +
                     "[4] - Databse type (1 - SQL Server / 2 - SQLite / 3 - Firebird / 4 - Oracle / 5 - MySql / 6 - Access / 7 - IBM DB2 / 8 - PostgreSQL)";
@@ -126,10 +118,17 @@ namespace DatabaseToCSV
                 string file = args[0];
 
                 if(!File.Exists(file))
-                    return string.Format("File not found in {0}!", file);
+                    message = string.Format("File not found in {0}!", file);
             }
 
-            return "";
+            if(message != "")
+            {
+                Console.WriteLine(message);
+                Console.Read();
+                return false;
+            }
+
+            return true;
         }
     }
 }
