@@ -7,8 +7,8 @@
     <ProjectGuid>{8DCFFF26-30F3-44D8-BE03-F3A54EAC023D}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>GeraCSV</RootNamespace>
-    <AssemblyName>GeraCSV</AssemblyName>
+    <RootNamespace>DatabaseToCSV</RootNamespace>
+    <AssemblyName>DatabaseToCSV</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>

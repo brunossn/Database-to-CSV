@@ -11,11 +11,11 @@ using System.Text;
 using Npgsql;
 //using IBM.Data.DB2;
 
-namespace GeraCSV
+namespace DatabaseToCSV
 {
     class Program
     {
-        private enum eTipoBanco
+        private enum eDatabase
         {
             SQLServer = 1,
             Sqlite = 2,
@@ -29,42 +29,42 @@ namespace GeraCSV
 
         static void Main(string[] args)
         {
-            int linhaAtual = 0;
-            int colunaAtual = 0;
+            int rowNumber = 0;
+            int columnNumber = 0;
 
             try
             {
-                string mensagemValida = valida(args);
+                string validationMessage = Validate(args);
                 
-                if (mensagemValida == "")
+                if (validationMessage == "")
                 {
-                    string arquivoQuery = args[0];
-                    string saidaCSV = args[1];
-                    string stringConexao = args[2];
-                    eTipoBanco tipoBanco = (eTipoBanco)Convert.ToInt32(args[3]);
+                    string queryFile = args[0];
+                    string csvFile = args[1];
+                    string connectionString = args[2];
+                    eDatabase database = (eDatabase)Convert.ToInt32(args[3]);
                    
-                    using (var conexao = GetConnection(tipoBanco, stringConexao))
+                    using (var connection = GetConnection(database, connectionString))
                     {
-                        conexao.Open();
+                        connection.Open();
 
-                        using (var comando = conexao.CreateCommand())
+                        using (var command = connection.CreateCommand())
                         {
-                            comando.CommandText = File.ReadAllText(arquivoQuery, Encoding.GetEncoding("ISO-8859-1"));
-                            comando.Connection = conexao;
-                            comando.CommandTimeout = 90000;
+                            command.CommandText = File.ReadAllText(queryFile, Encoding.GetEncoding("ISO-8859-1"));
+                            command.Connection = connection;
+                            command.CommandTimeout = 90000;
 
-                            using (var dr = comando.ExecuteReader())
+                            using (var dr = command.ExecuteReader())
                             {
-                                using (var sw = new StreamWriter(saidaCSV, false, Encoding.UTF8))
+                                using (var sw = new StreamWriter(csvFile, false, Encoding.UTF8))
                                 {
                                     while (dr.Read())
                                     {
-                                        linhaAtual++;
+                                        rowNumber++;
 
-                                        for (colunaAtual = 0; colunaAtual < dr.FieldCount; colunaAtual++)
+                                        for (columnNumber = 0; columnNumber < dr.FieldCount; columnNumber++)
                                         {
-                                            if (colunaAtual != 0) sw.Write(";");
-                                            sw.Write(dr[colunaAtual].ToString().Replace("\n", " ").Replace("\r", " ").Trim());
+                                            if (columnNumber != 0) sw.Write(";");
+                                            sw.Write(dr[columnNumber].ToString().Replace("\n", " ").Replace("\r", " ").Trim());
                                         }
 
                                         sw.Write("\n");
@@ -76,56 +76,57 @@ namespace GeraCSV
                 }
                 else
                 {
-                    Console.WriteLine(mensagemValida);
+                    Console.WriteLine(validationMessage);
                     Console.Read();
                 }
             }
             catch(Exception ex)
             {
-                Console.WriteLine("Erro na linha {0}, coluna {1}.", linhaAtual.ToString(), colunaAtual.ToString());
-                Console.WriteLine("\n\nDescrição: " + ex.Message);
-                Console.WriteLine("\n\nGeral: " + ex.ToString());
+                Console.WriteLine("Error on row {0}, column {1}.", rowNumber.ToString(), columnNumber.ToString());
+                Console.WriteLine("\n\nError message: " + ex.Message);
+                Console.WriteLine("\n\nDetails: " + ex.ToString());
                 Console.Read();
             }
         }
 
-        private static DbConnection GetConnection(eTipoBanco tipoBanco, string stringConexao)
+        private static DbConnection GetConnection(eDatabase tipoBanco, string stringConexao)
         {
             switch (tipoBanco)
             {
-                case eTipoBanco.SQLServer:
+                case eDatabase.SQLServer:
                     return new SqlConnection(stringConexao);
-                case eTipoBanco.Sqlite:
+                case eDatabase.Sqlite:
                     return new SQLiteConnection(stringConexao);
-                case eTipoBanco.Firebird:
+                case eDatabase.Firebird:
                     return new FbConnection(stringConexao);
-                case eTipoBanco.Oracle:
+                case eDatabase.Oracle:
                     return new OracleConnection(stringConexao);
-                case eTipoBanco.MySql:
+                case eDatabase.MySql:
                     return new MySqlConnection(stringConexao);
-                case eTipoBanco.Access:
+                case eDatabase.Access:
                     return new OleDbConnection(stringConexao);
                 //case eTipoBanco.DB2:
                 //    return new DB2Connection(stringConexao);
-                case eTipoBanco.PostgreSql:
+                case eDatabase.PostgreSql:
                     return new NpgsqlConnection(stringConexao);
                 default:
-                    throw new Exception("Tipo de banco de dados não especificado.");
+                    throw new Exception("Unspecified database type.");
             }
         }
 
-        public static string valida(string[] args)
+        public static string Validate(string[] args)
         {
             if(args.Length != 4)
-                return "Execute o sistema passando quatro parâmetros:\n[1] - Arquivo TXT contendo a query\n" +
-                    "[2] - Caminho do arquivo CSV que será gerado\n[3] - String de conexão com o banco de dados\n" +
-                    "[4] - Tipo do banco de dados (1 - SQL Server / 2 - SQLite / 3 - Firebird / 4 - Oracle / 5 - MySql / 6 - Access / 7 - IBM DB2 / 8 - PostgreSQL)";
+                return "Run this tool again with four parameters:\n[1] - Full path of a .SQL file with a query\n" +
+                    "[2] - Full path of the .CSV file that will be generated\n" + 
+                    "[3] - Connectionstring (get support in connectionstrings.com)\n" +
+                    "[4] - Databse type (1 - SQL Server / 2 - SQLite / 3 - Firebird / 4 - Oracle / 5 - MySql / 6 - Access / 7 - IBM DB2 / 8 - PostgreSQL)";
             else
             {
-                string caminho = args[0];
+                string file = args[0];
 
-                if(!File.Exists(caminho))
-                    return string.Format("Arquivo {0} não localizado!", caminho);
+                if(!File.Exists(file))
+                    return string.Format("File not found in {0}!", file);
             }
 
             return "";
