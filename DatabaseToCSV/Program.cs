@@ -9,7 +9,6 @@ using System.Data.SQLite;
 using System.IO;
 using System.Text;
 using Npgsql;
-using IBM.Data.DB2;
 
 namespace DatabaseToCSV
 {
@@ -96,7 +95,7 @@ namespace DatabaseToCSV
                 case eDatabase.Access:
                     return new OleDbConnection(connectionString);
                 case eDatabase.DB2:
-                    return new DB2Connection(connectionString);
+                    throw new Exception("The IBM DB2 database is no longer supported.");
                 case eDatabase.PostgreSql:
                     return new NpgsqlConnection(connectionString);
                 default:
